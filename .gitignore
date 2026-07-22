@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+
+# Ignore all environment files except the template
+.env.*
+!.env.example

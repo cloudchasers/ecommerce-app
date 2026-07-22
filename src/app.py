@@ -1,6 +1,14 @@
 from flask import Flask, render_template, request
+from src.config import load_config
+from src.lib.db import init_db
 
 app = Flask(__name__)
+
+# Load configuration from our central config directory
+app.config.from_object(load_config())
+
+# Initialize DB connection based on environment config
+init_db()
 
 # Mock data based on the PDF requirements
 PRODUCTS = [
@@ -28,4 +36,13 @@ def products():
     return render_template('products.html', products=filtered_products, search_query=search_query)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use livereload in development mode
+    if app.config['DEBUG']:
+        from livereload import Server
+        server = Server(app.wsgi_app)
+        # Watch the templates and static folders for changes
+        server.watch('src/templates/*.*')
+        server.watch('src/static/*.*')
+        server.serve(host='0.0.0.0', port=5000)
+    else:
+        app.run(host='0.0.0.0', port=5000)

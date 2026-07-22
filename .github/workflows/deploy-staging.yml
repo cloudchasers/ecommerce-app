@@ -1,0 +1,31 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Tests
+        run: echo "Running staging tests..."
+
+      - name: Deploy
+        run: |
+          echo "Deploying to Staging Environment..."
+          # Insert actual deployment script (e.g. ACI / Docker push) here
+        env:
+          APP_ENV: staging

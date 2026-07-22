@@ -48,7 +48,7 @@ Follow these instructions to run the application locally on your machine.
 
 4. **Run the application**
    ```bash
-   python app.py
+   python src/app.py
    ```
 
 5. **View the site**
