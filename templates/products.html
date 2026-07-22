@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="products-header">
+    <h1>Our Pastries</h1>
+    <p>Handcrafted delicacies for every occasion.</p>
+    
+    <div class="search-bar">
+        <form action="{{ url_for('products') }}" method="GET" style="width: 100%; display: flex; position: relative;">
+            <input type="text" name="q" placeholder="Search for croissants, cakes..." value="{{ search_query }}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</section>
+
+<section class="products-grid">
+    {% if products %}
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-emoji">{{ product.image }}</div>
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-desc">{{ product.description }}</p>
+            <div class="product-footer">
+                <span class="product-price">${{ "%.2f"|format(product.price) }}</span>
+                <button class="btn-buy" onclick="alert('Checkout not implemented yet! This is a prototype.')">Buy</button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 3rem;">
+            <h2>No pastries found matching "{{ search_query }}"</h2>
+            <p>Try searching for something else!</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
