@@ -52,7 +52,7 @@ def checkout(product_id):
         return "Product not found", 404
         
     # 1. Define the destination URL you want the QR code to link to
-    target_url = f"http://3.237.62.74:80/?order_id=12345&amount={product['price']}&merchant=sweetcrumb-pastries"
+    target_url = f"http://18.232.86.144:5000/?order_id=12345&amount={product['price']}&merchant=sweetcrumb-pastries"
     
     # 2. URL-encode the data so the QR server doesn't break on the '&' symbols
     qr_data = urllib.parse.quote(target_url)
