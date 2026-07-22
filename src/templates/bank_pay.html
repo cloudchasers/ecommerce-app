@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Bank - Confirm Payment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bank-primary: #1e3a8a;
+            --bank-bg: #f8fafc;
+            --bank-card: #ffffff;
+            --accent: #2563eb;
+            --success: #16a34a;
+            --error: #dc2626;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bank-bg); color: #0f172a; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
+        .bank-card { background: var(--bank-card); border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 440px; padding: 2.5rem; text-align: center; border: 1px solid #e2e8f0; }
+        .bank-header { font-size: 1.25rem; font-weight: 800; color: var(--bank-primary); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .amount-box { background: #f1f5f9; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .amount-box label { font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+        .amount-val { font-size: 2rem; font-weight: 800; color: #0f172a; margin-top: 0.25rem; }
+        .details-list { text-align: left; margin-bottom: 1.5rem; }
+        .detail-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+        .detail-item span:first-child { color: #64748b; font-weight: 500; }
+        .detail-item span:last-child { font-weight: 700; }
+        .btn-confirm { background: var(--accent); color: white; border: none; width: 100%; padding: 1rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.3s; }
+        .btn-confirm:hover { background: #1d4ed8; }
+        .success-box { display: none; margin-top: 1rem; color: var(--success); font-weight: 700; }
+        .error-card { color: var(--error); padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="bank-card">
+        <div class="bank-header">
+            <span>🏛️</span> Mock Banking App
+        </div>
+
+        {% if error %}
+        <div class="error-card">
+            <h3>⚠️ Security Error</h3>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #991b1b;">{{ error }}</p>
+        </div>
+        {% else %}
+        <div id="payment-form">
+            <p style="color: #64748b; margin-bottom: 1rem;">Decrypted Payment Request</p>
+
+            <div class="amount-box">
+                <label>Total Amount</label>
+                <div class="amount-val">${{ "%.2f"|format(amount|float if amount else 0.0) }}</div>
+            </div>
+
+            <div class="details-list">
+                <div class="detail-item">
+                    <span>Customer</span>
+                    <span>{{ user }}</span>
+                </div>
+                <div class="detail-item">
+                    <span>Order Reference</span>
+                    <span><code>{{ order_id }}</code></span>
+                </div>
+                <div class="detail-item">
+                    <span>Status</span>
+                    <span style="color: #d97706;">🔒 Signature Verified</span>
+                </div>
+            </div>
+
+            <button id="btn-pay" class="btn-confirm">Confirm & Pay Now</button>
+        </div>
+
+        <div id="payment-done" class="success-box">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+            <h2>Payment Successful!</h2>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">The store has been notified. You can close this tab now.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not error %}
+    <script>
+        document.getElementById('btn-pay').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-pay');
+            btn.disabled = true;
+            btn.textContent = 'Processing Payment...';
+            try {
+                const res = await fetch(`/api/order/confirm/{{ order_id }}`, { method: 'POST' });
+                if (res.ok) {
+                    document.getElementById('payment-form').style.display = 'none';
+                    document.getElementById('payment-done').style.display = 'block';
+                }
+            } catch (err) {
+                alert('Failed to process payment');
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Pay Now';
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
