@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-split">
+        <!-- Left Side: Order Details -->
+        <div class="checkout-left">
+            <h2>Your Order</h2>
+            <div class="order-summary">
+                <div class="order-item">
+                    <div class="order-item-emoji">{{ product.image }}</div>
+                    <div class="order-item-details">
+                        <h3>{{ product.name }}</h3>
+                        <p>Quantity: 1</p>
+                    </div>
+                    <div class="order-item-price">
+                        ${{ "%.2f"|format(product.price) }}
+                    </div>
+                </div>
+                <div class="order-total">
+                    <span>Total to pay:</span>
+                    <strong>${{ "%.2f"|format(product.price) }}</strong>
+                </div>
+            </div>
+            <p class="payment-instructions">
+                Please scan the QR code on the right with your mobile banking app to complete the purchase.
+            </p>
+        </div>
+        
+        <!-- Right Side: QR Code -->
+        <div class="checkout-right">
+            <div class="qr-card">
+                <h2>Scan to Pay</h2>
+                <div class="qr-image-wrapper">
+                    <img src="{{ qr_url }}" alt="Payment QR Code">
+                </div>
+                <p>Status: <span class="status-pending">PENDING</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

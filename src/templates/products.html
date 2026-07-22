@@ -22,7 +22,7 @@
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-footer">
                 <span class="product-price">${{ "%.2f"|format(product.price) }}</span>
-                <button class="btn-buy" onclick="alert('Checkout not implemented yet! This is a prototype.')">Buy</button>
+                <a href="{{ url_for('checkout', product_id=product.id) }}" class="btn-buy" style="text-decoration: none;">Buy</a>
             </div>
         </div>
         {% endfor %}

@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import urllib.parse
 
 # Ensure the project root is on sys.path so 'src' is importable
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -42,6 +43,24 @@ def products():
     else:
         filtered_products = PRODUCTS
     return render_template('products.html', products=filtered_products, search_query=search_query)
+
+@app.route('/checkout/<int:product_id>')
+@app.route('/checkout/<int:product_id>')
+def checkout(product_id):
+    product = next((p for p in PRODUCTS if p['id'] == product_id), None)
+    if not product:
+        return "Product not found", 404
+        
+    # 1. Define the destination URL you want the QR code to link to
+    target_url = f"http://3.237.62.74:80/?order_id=12345&amount={product['price']}&merchant=sweetcrumb-pastries"
+    
+    # 2. URL-encode the data so the QR server doesn't break on the '&' symbols
+    qr_data = urllib.parse.quote(target_url)
+    
+    # 3. Generate the QR image URL
+    qr_url = f"http://api.qrserver.com/v1/create-qr-code/?size=250x250&data={qr_data}"
+    
+    return render_template('checkout.html', product=product, qr_url=qr_url)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

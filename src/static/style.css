@@ -245,3 +245,134 @@ footer {
     font-size: 0.9rem;
     border-top: 1px solid rgba(0,0,0,0.05);
 }
+
+/* Checkout Page */
+.checkout-container {
+    max-width: 1000px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+}
+
+.checkout-split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.checkout-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.checkout-left h2 {
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.order-summary {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.order-item-emoji {
+    font-size: 2.5rem;
+    margin-right: 1.5rem;
+}
+
+.order-item-details h3 {
+    margin-bottom: 0.25rem;
+}
+
+.order-item-price {
+    margin-left: auto;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+    font-size: 1.2rem;
+}
+
+.order-total strong {
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.payment-instructions {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.checkout-right {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-left: 1px solid rgba(0,0,0,0.1);
+    padding-left: 3rem;
+}
+
+@media (max-width: 768px) {
+    .checkout-right {
+        border-left: none;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        padding-left: 0;
+        padding-top: 3rem;
+    }
+}
+
+.qr-card {
+    text-align: center;
+}
+
+.qr-card h2 {
+    margin-bottom: 1.5rem;
+}
+
+.qr-image-wrapper {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.qr-image-wrapper img {
+    width: 250px;
+    height: 250px;
+    display: block;
+}
+
+.status-pending {
+    display: inline-block;
+    background: #ffecb3;
+    color: #ff8f00;
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
