@@ -63,4 +63,4 @@ def checkout(product_id):
     return render_template('checkout.html', product=product, qr_url=qr_url)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
