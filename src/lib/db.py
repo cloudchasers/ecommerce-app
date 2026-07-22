@@ -7,5 +7,5 @@ def get_db_url():
     return config.DATABASE_URL
 
 def init_db():
-    print(f"[DB] Initializing database connection at {get_db_url()} (Env: {config.__name__})")
+    print(f"[DB] Initializing database connection at {get_db_url()}")
     # Here we would initialize SQLAlchemy or PyMySQL

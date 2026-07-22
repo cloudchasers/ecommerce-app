@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Ensure the project root is on sys.path so 'src' is importable
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from flask import Flask, render_template, request
 from src.config import load_config
 from src.lib.db import init_db
@@ -28,7 +36,7 @@ def products():
     search_query = request.args.get('q', '').lower()
     if search_query:
         filtered_products = [
-            p for p in PRODUCTS 
+            p for p in PRODUCTS
             if search_query in p['name'].lower() or search_query in p['description'].lower()
         ]
     else:
@@ -36,13 +44,4 @@ def products():
     return render_template('products.html', products=filtered_products, search_query=search_query)
 
 if __name__ == '__main__':
-    # Use livereload in development mode
-    if app.config['DEBUG']:
-        from livereload import Server
-        server = Server(app.wsgi_app)
-        # Watch the templates and static folders for changes
-        server.watch('src/templates/*.*')
-        server.watch('src/static/*.*')
-        server.serve(host='0.0.0.0', port=5000)
-    else:
-        app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
