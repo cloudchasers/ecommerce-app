@@ -19,22 +19,18 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            agent {
-                docker { image 'python:3.11-slim' }
-            }
-            steps {
-                sh '''
-                    pip install -r requirements.txt
-                    pytest tests/test.py
-                '''
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh '''
                     docker build -t ${IMAGE_NAME}:${TAG} .
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    docker run --rm ${IMAGE_NAME}:${TAG} pytest tests/test.py -v
                 '''
             }
         }
