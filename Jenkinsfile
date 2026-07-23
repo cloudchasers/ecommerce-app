@@ -69,4 +69,8 @@ pipeline {
             echo 'Ecommerce image pushed to ACR successfully'
         }
 
-   
+        failure {
+            echo 'Pipeline failed'
+        }
+    }
+}
