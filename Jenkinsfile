@@ -19,11 +19,13 @@ pipeline {
             }
         }
 
-        stage('Deploy-Dev') {
+        stage('Build & Unit Test') {
             steps {
                 sh '''
-                ssh -i ~/.ssh/jenkins_deploy_key ubuntu@54.227.120.126 \
-                "cd /home/ubuntu/ecommerce-app && git pull"
+                    ssh -o StrictHostKeyChecking=no \
+                    -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
+                    ubuntu@54.227.120.126 \
+                    "cd /home/ubuntu/ecommerce-app && git pull"
                 '''
             }
         }
