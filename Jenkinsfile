@@ -19,16 +19,20 @@ pipeline {
             }
         }
 
-        stage('Build & Unit Test') {
-            steps {
-                sh '''
-                    ssh -o StrictHostKeyChecking=no \
-                    -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
-                    ubuntu@54.227.120.126 \
-                    "cd /home/ubuntu/ecommerce-app && git pull"
-                '''
-            }
+        stage('Deploy to Dev EC2') {
+
+        steps {
+            sh '''
+                ssh -o StrictHostKeyChecking=no \
+                -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
+                ubuntu@54.227.120.126 \
+                "
+                cd /home/ubuntu/ecommerce-app &&
+                docker compose up -d --build
+                "
+            '''
         }
+    }
         
 
         stage('Build Docker Image') {
