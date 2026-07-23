@@ -35,7 +35,8 @@ def get_db_connection():
         port=3306,
         user="webuser",
         password="MyStrongPassword123!",
-        database="testsite"
+        database="testsite",
+        connection_timeout=3
     )
 
 # --- Encryption Serializer ---
