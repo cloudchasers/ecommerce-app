@@ -1,0 +1,18 @@
+services:
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ecommerce
+
+  ecommerce:
+    build: ./ecommerce-app
+    expose:
+      - "5000"
+    environment:
+      BANK_PUBLIC_BASE: http://44.222.238.61
+      MERCHANT_ACCOUNT: sweetcrumb-pastries
