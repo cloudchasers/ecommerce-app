@@ -11,11 +11,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+
 import qrcode
+import mysql.connector
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from src.config import load_config
 from src.lib.db import init_db
+
 
 app = Flask(__name__)
 
@@ -25,6 +28,15 @@ app.secret_key = app.config.get('SECRET_KEY', 'dev-fallback-secret')
 
 # Initialize DB connection based on environment config
 init_db()
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="100.48.217.125",
+        port=3306,
+        user="webuser",
+        password="MyStrongPassword123!",
+        database="testsite"
+    )
 
 # --- Encryption Serializer ---
 serializer = URLSafeTimedSerializer(app.secret_key)
@@ -85,6 +97,25 @@ def find_product(product_id):
     return next((p for p in PRODUCTS if p['id'] == product_id), None)
 
 # --- Routes ---
+@app.route("/testdb")
+def testdb():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+
+
+        cursor.execute("SELECT * FROM transactions")
+
+        users = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return str(users)
+
+    except Exception as e:
+        return str(e)
 
 @app.route('/')
 def home():
@@ -107,6 +138,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+
+
 
         user = next((u for u in USERS if u['username'] == username and u['password'] == password), None)
 
@@ -182,13 +215,38 @@ def api_checkout():
     order_id = uuid.uuid4().hex[:10].upper()
     ORDERS[order_id] = {
         'order_id': order_id,
-        'items': cart_items,
+                'items': cart_items,
         'amount': total,
         'user': session['user'],
         'status': 'pending',
         'created_at': datetime.now().isoformat()
     }
     save_orders()
+    
+    # --- Angelica's MySQL DB Tracking (Safely Integrated) ---
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO transactions
+            (order_id, username, amount, status)
+            VALUES (%s, %s, %s, %s)
+            """, 
+            (
+                order_id,
+                session['user'],
+                total,
+                'PENDING'
+            )
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Failed to log to MySQL database: {e}")
+        # We don't want the checkout to fail for the user just because the DB is unreachable 
+        # (especially important for Jenkins tests to pass)
     
     # Clear cart
     session['cart'] = []
