@@ -10,7 +10,8 @@ services:
       - ecommerce
 
   ecommerce:
-    build: ./ecommerce-app
+    build: .
+    container_name: ecommerce
     expose:
       - "5000"
     environment:
