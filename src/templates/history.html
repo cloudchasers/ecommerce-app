@@ -27,7 +27,7 @@
                     <h4 style="margin-bottom: 0.5rem;">Items:</h4>
                     <ul style="list-style: none; padding: 0;">
                         {% for item in order['items'] %}
-                            <li style="padding: 0.25rem 0;">{{ item.image }} {{ item.name }} - ₱{{ "%.2f"|format(item.price) }}</li>
+                            <li style="padding: 0.25rem 0;">{{ item.product }} - ₱{{ "%.2f"|format(item.product_price) }}</li>
                         {% endfor %}
                     </ul>
                 </div>
