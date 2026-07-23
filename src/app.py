@@ -57,7 +57,7 @@ def decrypt_order_payload(token):
         return None
 
 def get_bank_payment_url(order_id, amount, user):
-    bank_base = app.config.get('BANK_PUBLIC_URL', 'http://18.232.86.144:5000')
+    bank_base = app.config.get('BANK_PUBLIC_BASE', 'http://18.232.86.144:5000')
     token = encrypt_order_payload(order_id, amount, user)
     return f"{bank_base}/?data={token}"
 
