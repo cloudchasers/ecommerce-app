@@ -238,4 +238,4 @@ def order_confirm(order_id):
     return jsonify({'order_id': order_id, 'status': 'paid', 'message': 'Payment confirmed'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)
