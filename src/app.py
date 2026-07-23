@@ -343,7 +343,8 @@ def checkout_pay(order_id):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM transactions WHERE transaction_id = %s", (order_id,))
-        order = cursor.fetchone()
+        orders = cursor.fetchall()
+        order = orders[0] if orders else None
         
         if not order or order['user_id'] != session['user_id']:
             cursor.close()
@@ -383,7 +384,8 @@ def receipt(order_id):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM transactions WHERE transaction_id = %s", (order_id,))
-        order = cursor.fetchone()
+        orders = cursor.fetchall()
+        order = orders[0] if orders else None
         
         if not order or order['user_id'] != session['user_id']:
             cursor.close()
@@ -417,12 +419,14 @@ def history():
         cursor.execute("SELECT * FROM transactions WHERE user_id = %s ORDER BY created_at DESC", (session['user_id'],))
         orders = cursor.fetchall()
         
+        cursor2 = conn.cursor(dictionary=True)
         for order in orders:
             order['order_id'] = order['transaction_id']
             order['amount'] = float(order['total_price'])
-            cursor.execute("SELECT * FROM transaction_items WHERE transaction_id = %s", (order['transaction_id'],))
-            order['items'] = cursor.fetchall()
+            cursor2.execute("SELECT * FROM transaction_items WHERE transaction_id = %s", (order['transaction_id'],))
+            order['items'] = cursor2.fetchall()
             
+        cursor2.close()
         cursor.close()
         conn.close()
         return render_template('history.html', orders=orders)
