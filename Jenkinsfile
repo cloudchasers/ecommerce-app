@@ -30,7 +30,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    docker run --rm ${IMAGE_NAME}:${TAG} pytest tests/test.py -v
+                    docker run --rm -e PYTHONPATH=/app ${IMAGE_NAME}:${TAG} pytest tests/test.py -v
                 '''
             }
         }
