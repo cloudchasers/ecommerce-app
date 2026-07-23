@@ -20,6 +20,9 @@ pipeline {
         }
 
         stage('Run Tests') {
+            agent {
+                docker { image 'python:3.11-slim' }
+            }
             steps {
                 sh '''
                     pip install -r requirements.txt
