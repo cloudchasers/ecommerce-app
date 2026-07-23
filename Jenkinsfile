@@ -19,6 +19,16 @@ pipeline {
             }
         }
 
+        stage('Deploy-Dev') {
+            steps {
+                sh '''
+                ssh -i ~/.ssh/jenkins_deploy_key ubuntu@54.227.120.126 \
+                "cd /home/ubuntu/ecommerce-app && git pull"
+                '''
+            }
+        }
+        
+
         stage('Build Docker Image') {
             steps {
                 sh '''
