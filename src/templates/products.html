@@ -22,7 +22,7 @@
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-footer">
                 <span class="product-price">${{ "%.2f"|format(product.price) }}</span>
-                <a href="{{ url_for('buy', product_id=product.id) }}" class="btn-buy">Buy</a>
+                <button onclick="addToCart({{ product.id }})" class="btn-buy">Add to Cart</button>
             </div>
         </div>
         {% endfor %}
@@ -33,4 +33,28 @@
         </div>
     {% endif %}
 </section>
+
+<script>
+async function addToCart(productId) {
+    try {
+        const response = await fetch(`/api/cart/add/${productId}`, { method: 'POST' });
+        const data = await response.json();
+        
+        if (response.status === 401 && data.redirect) {
+            window.location.href = data.redirect; // Redirect to login
+            return;
+        }
+        
+        if (data.success) {
+            await refreshCartDrawer();
+            openDrawer();
+        } else {
+            alert(data.error || 'Failed to add item to cart');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Network error. Please try again.');
+    }
+}
+</script>
 {% endblock %}

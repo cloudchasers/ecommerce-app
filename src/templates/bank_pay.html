@@ -86,8 +86,7 @@
             try {
                 const res = await fetch(`/api/order/confirm/{{ order_id }}`, { method: 'POST' });
                 if (res.ok) {
-                    document.getElementById('payment-form').style.display = 'none';
-                    document.getElementById('payment-done').style.display = 'block';
+                    window.location.href = `/receipt/{{ order_id }}`;
                 }
             } catch (err) {
                 alert('Failed to process payment');

@@ -1,0 +1,191 @@
+{
+    "346126F6C7": {
+        "order_id": "346126F6C7",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T10:44:15.796970"
+    },
+    "6764DF018A": {
+        "order_id": "6764DF018A",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T10:47:38.727063"
+    },
+    "705DCB8DC1": {
+        "order_id": "705DCB8DC1",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T11:23:54.782311"
+    },
+    "B75D32F8F4": {
+        "order_id": "B75D32F8F4",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T11:27:07.081127"
+    },
+    "51C910BAE9": {
+        "order_id": "51C910BAE9",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T11:30:00.513416"
+    },
+    "23F4E99CF6": {
+        "order_id": "23F4E99CF6",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T11:30:20.206602"
+    },
+    "D2AD8B3F7B": {
+        "order_id": "D2AD8B3F7B",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T11:43:43.066687"
+    },
+    "1231D9ABB4": {
+        "order_id": "1231D9ABB4",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T11:46:19.331186"
+    },
+    "684BC29B97": {
+        "order_id": "684BC29B97",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T11:48:47.751037"
+    }
+}
