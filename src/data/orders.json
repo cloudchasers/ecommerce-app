@@ -259,5 +259,98 @@
         "user": "admin",
         "status": "pending",
         "created_at": "2026-07-23T15:10:02.182542"
+    },
+    "2026A62AE3": {
+        "order_id": "2026A62AE3",
+        "items": [
+            {
+                "id": 1,
+                "name": "Classic Croissant",
+                "price": 4.5,
+                "image": "\ud83e\udd50"
+            },
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 39.5,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T15:15:56.219156"
+    },
+    "83BA68296C": {
+        "order_id": "83BA68296C",
+        "items": [
+            {
+                "id": 3,
+                "name": "Blueberry Muffins",
+                "price": 3.75,
+                "image": "\ud83e\uddc1"
+            },
+            {
+                "id": 5,
+                "name": "Fudge Brownies",
+                "price": 4.0,
+                "image": "\ud83c\udf6b"
+            },
+            {
+                "id": 4,
+                "name": "Artisan Cookies",
+                "price": 2.5,
+                "image": "\ud83c\udf6a"
+            }
+        ],
+        "amount": 10.25,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T15:16:46.210396"
+    },
+    "928D3CEC13": {
+        "order_id": "928D3CEC13",
+        "items": [
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 35.0,
+        "user": "admin",
+        "status": "paid",
+        "created_at": "2026-07-23T15:37:57.434285"
+    },
+    "BF83DC2AC8": {
+        "order_id": "BF83DC2AC8",
+        "items": [
+            {
+                "id": 2,
+                "name": "Decadent Chocolate Cake",
+                "price": 35.0,
+                "image": "\ud83c\udf70"
+            }
+        ],
+        "amount": 35.0,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T15:38:35.703339"
+    },
+    "99C8ED0F85": {
+        "order_id": "99C8ED0F85",
+        "items": [
+            {
+                "id": 3,
+                "name": "Blueberry Muffins",
+                "price": 3.75,
+                "image": "\ud83e\uddc1"
+            }
+        ],
+        "amount": 3.75,
+        "user": "admin",
+        "status": "pending",
+        "created_at": "2026-07-23T16:20:29.491557"
     }
 }
