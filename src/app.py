@@ -11,11 +11,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+
 import qrcode
+import mysql.connector
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_file
 from src.config import load_config
 from src.lib.db import init_db
+
 
 app = Flask(__name__)
 
@@ -25,6 +28,15 @@ app.secret_key = app.config.get('SECRET_KEY', 'dev-fallback-secret')
 
 # Initialize DB connection based on environment config
 init_db()
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="100.48.217.125",
+        port=3306,
+        user="webuser",
+        password="MyStrongPassword123!",
+        database="testsite"
+    )
 
 # --- Encryption Serializer ---
 serializer = URLSafeTimedSerializer(app.secret_key)
@@ -73,6 +85,25 @@ def find_product(product_id):
     return next((p for p in PRODUCTS if p['id'] == product_id), None)
 
 # --- Routes ---
+@app.route("/testdb")
+def testdb():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+
+
+        cursor.execute("SELECT * FROM transactions")
+
+        users = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return str(users)
+
+    except Exception as e:
+        return str(e)
 
 @app.route('/')
 def home():
@@ -95,6 +126,8 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+
+
 
         user = next((u for u in USERS if u['username'] == username and u['password'] == password), None)
 
@@ -132,18 +165,38 @@ def buy(product_id):
         'product_id': product['id'],
         'product_name': product['name'],
         'amount': product['price'],
-        'user': session['user'],
+        'user': session['user'],    
         'status': 'pending',
         'created_at': datetime.now().isoformat()
     }
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    return redirect(url_for(
-        'checkout',
+    cursor.execute(
+        """
+        INSERT INTO transactions
+        (order_id, username, amount, status)
+        VALUES (%s, %s, %s, %s)
+        """, 
+        (
+            order_id,
+            session['user'],
+            product['price'],
+            'PENDING'
+        )
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for
+                (
+    'checkout',
         orderid=order_id,
         amount=product['price'],
         user=session['user'],
         product_id=product['id']
-    ))
+))
 
 @app.route('/checkout')
 def checkout():
