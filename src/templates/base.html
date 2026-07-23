@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Chaser Pastries</title>
+    <title>CloudChasers</title>
     <!-- Google Fonts for Modern Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <a href="{{ url_for('home') }}" class="logo">CloudChaser<span>.</span></a>
+        <a href="{{ url_for('home') }}" class="logo">CloudChasers<span>.</span></a>
         <nav>
             <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('products') }}">Our Pastries</a>
+            <a href="{{ url_for('products') }}">Our Treats</a>
             {% if session.get('user') %}
+                <a href="#" onclick="openDrawer(); return false;" id="nav-cart-btn">Cart ({{ global_cart_items|length }})</a>
+                <a href="{{ url_for('history') }}">History</a>
                 <span class="nav-user">Hi, {{ session.name }}</span>
                 <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
             {% else %}
@@ -38,7 +40,140 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Sweetcrumb Pastries. All rights reserved.</p>
+        <p>&copy; 2026 CloudChasers. All rights reserved.</p>
     </footer>
+    <!-- Side Drawer Overlay and Container -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="cartDrawer">
+        <div class="drawer-header">
+            <h2>Your Cart</h2>
+            <button class="drawer-close" onclick="closeDrawer()">✕</button>
+        </div>
+        <div class="drawer-content" id="drawerContent">
+            {% include '_drawer_content.html' %}
+        </div>
+    </div>
+
+    <script>
+        function openDrawer() {
+            document.getElementById('cartDrawer').classList.add('open');
+            document.getElementById('drawerOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeDrawer() {
+            document.getElementById('cartDrawer').classList.remove('open');
+            document.getElementById('drawerOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+            
+            // If we were on checkout state, reset it when closing
+            if (document.getElementById('drawerContent').innerHTML.includes('pay-banking-btn')) {
+                refreshCartDrawer(); // Reset to cart view for next time
+            }
+        }
+
+        async function refreshCartDrawer() {
+            try {
+                const response = await fetch("{{ url_for('api_cart_drawer') }}");
+                const html = await response.text();
+                document.getElementById('drawerContent').innerHTML = html;
+                
+                // Also update the nav cart count
+                const itemCountMatch = html.match(/drawer-item-remove/g);
+                const count = itemCountMatch ? itemCountMatch.length : 0;
+                const navCartBtn = document.getElementById('nav-cart-btn');
+                if (navCartBtn) {
+                    navCartBtn.textContent = `Cart (${count})`;
+                }
+            } catch (err) {
+                console.error("Failed to refresh drawer", err);
+            }
+        }
+
+        async function removeFromCart(index) {
+            try {
+                const response = await fetch(`/api/cart/remove/${index}`, { method: 'POST' });
+                if (response.ok) {
+                    refreshCartDrawer();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function proceedToCheckout() {
+            const drawerContent = document.getElementById('drawerContent');
+            drawerContent.innerHTML = '<div style="padding: 2rem; text-align: center;">Processing...</div>';
+            
+            try {
+                const response = await fetch("{{ url_for('api_checkout') }}", { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.error && data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+                
+                if (data.success) {
+                    // Render Checkout Summary in drawer
+                    drawerContent.innerHTML = `
+                        <div class="drawer-checkout-summary">
+                            <h3>Checkout Summary</h3>
+                            <p>Order ID: <strong>${data.order_id}</strong></p>
+                            <p>Amount to pay: <strong>₱${data.amount.toFixed(2)}</strong></p>
+                            <div style="margin-top: 2rem;">
+                                <a href="${data.bank_payment_url}" target="_blank" class="btn-primary pay-banking-btn" style="display: block; text-align: center; text-decoration: none; padding: 1rem;">
+                                    Pay with Banking App
+                                </a>
+                            </div>
+                            <div id="payment-status-poll" style="margin-top: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <div class="pulse-dot"></div>
+                                    Waiting for payment...
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // Clear the cart count in nav
+                    const navCartBtn = document.getElementById('nav-cart-btn');
+                    if (navCartBtn) navCartBtn.textContent = 'Cart (0)';
+                    
+                    // Start polling for payment success
+                    const orderId = data.order_id;
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            const res = await fetch(`/api/order/status/${orderId}`);
+                            const statusData = await res.json();
+                            if (statusData.status === 'paid') {
+                                clearInterval(pollInterval);
+                                // Redirect to receipt page when paid
+                                window.location.href = `/receipt/${orderId}`;
+                            }
+                        } catch (e) {
+                            console.error('Polling error', e);
+                        }
+                    }, 2000);
+                    
+                    // Stop polling if drawer is closed to prevent infinite loops if they abandon
+                    const overlay = document.getElementById('drawerOverlay');
+                    const originalClose = overlay.onclick;
+                    const stopPollingAndClose = () => {
+                        clearInterval(pollInterval);
+                        closeDrawer();
+                        overlay.onclick = originalClose;
+                    };
+                    overlay.onclick = stopPollingAndClose;
+                    document.querySelector('.drawer-close').onclick = stopPollingAndClose;
+                } else {
+                    drawerContent.innerHTML = `<div style="padding: 2rem; color: red;">Error: ${data.error || 'Failed to checkout'}</div>`;
+                    setTimeout(refreshCartDrawer, 2000);
+                }
+            } catch (err) {
+                console.error(err);
+                drawerContent.innerHTML = '<div style="padding: 2rem; color: red;">Network error. Please try again.</div>';
+                setTimeout(refreshCartDrawer, 2000);
+            }
+        }
+    </script>
 </body>
 </html>

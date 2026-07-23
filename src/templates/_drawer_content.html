@@ -1,0 +1,27 @@
+{% if global_cart_items %}
+    <div class="drawer-items">
+        {% for item in global_cart_items %}
+        <div class="drawer-item">
+            <span class="drawer-item-img">{{ item.product.image }}</span>
+            <div class="drawer-item-details">
+                <h4>{{ item.product.name }}</h4>
+                <p>₱{{ "%.2f"|format(item.product.price) }}</p>
+            </div>
+            <button class="drawer-item-remove" onclick="removeFromCart({{ item.index }})">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="drawer-footer">
+        <div class="drawer-total">
+            <span>Total:</span>
+            <span>₱{{ "%.2f"|format(global_cart_total) }}</span>
+        </div>
+        <button class="btn-primary drawer-checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+    </div>
+{% else %}
+    <div class="drawer-empty">
+        <h3>Your cart is empty</h3>
+        <p>Looks like you haven't caught any clouds yet.</p>
+        <button class="btn-primary" onclick="closeDrawer(); window.location.href='{{ url_for('products') }}'">Browse Treats</button>
+    </div>
+{% endif %}

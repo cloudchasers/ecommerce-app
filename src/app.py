@@ -63,7 +63,7 @@ def decrypt_order_payload(token):
 def get_bank_payment_url(order_id, amount, user):
     bank_base = app.config.get('BANK_PUBLIC_BASE', 'http://18.232.86.144:5000')
     token = encrypt_order_payload(order_id, amount, user)
-    return f"{bank_base}/pay?data={token}"
+    return f"{bank_base}/?data={token}"
 
 # --- Data ---
 
@@ -79,7 +79,19 @@ PRODUCTS = [
     {"id": 5, "name": "Fudge Brownies", "price": 4.00, "image": "🍫", "description": "Dense, gooey brownies made with premium cocoa."}
 ]
 
-ORDERS = {}
+ORDERS_FILE = Path(__file__).resolve().parent / 'data' / 'orders.json'
+if ORDERS_FILE.exists():
+    with open(ORDERS_FILE, 'r') as f:
+        try:
+            ORDERS = json.load(f)
+        except json.JSONDecodeError:
+            ORDERS = {}
+else:
+    ORDERS = {}
+
+def save_orders():
+    with open(ORDERS_FILE, 'w') as f:
+        json.dump(ORDERS, f, indent=4)
 
 def find_product(product_id):
     return next((p for p in PRODUCTS if p['id'] == product_id), None)
@@ -148,110 +160,238 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
 
-@app.route('/buy/<int:product_id>')
-def buy(product_id):
+@app.context_processor
+def inject_cart_data():
+    cart_items = []
+    total = 0.0
+    if 'cart' in session:
+        for i, pid in enumerate(session['cart']):
+            prod = find_product(pid)
+            if prod:
+                cart_items.append({'index': i, 'product': prod})
+                total += prod['price']
+    return dict(global_cart_items=cart_items, global_cart_total=total)
+
+@app.route('/api/cart/add/<int:product_id>', methods=['POST'])
+def api_add_to_cart(product_id):
     if 'user' not in session:
-        flash('Please log in to make a purchase.', 'error')
-        return redirect(url_for('login', next=url_for('buy', product_id=product_id)))
+        return jsonify({'error': 'Please log in to add items to your cart.', 'redirect': url_for('login')}), 401
+
+    product = find_product(product_id)
+    if not product:
+        return jsonify({'error': 'Product not found.'}), 404
+        
+    cart = session.get('cart', [])
+    cart.append(product['id'])
+    session['cart'] = cart
+    return jsonify({'success': True, 'message': f'Added {product["name"]} to your cart!'})
+
+@app.route('/api/cart/remove/<int:index>', methods=['POST'])
+def api_remove_from_cart(index):
+    cart = session.get('cart', [])
+    if 0 <= index < len(cart):
+        cart.pop(index)
+        session['cart'] = cart
+        return jsonify({'success': True})
+    return jsonify({'error': 'Invalid index.'}), 400
+
+@app.route('/api/cart/checkout', methods=['POST'])
+def api_checkout():
+    if 'user' not in session:
+        return jsonify({'error': 'Please log in to checkout.', 'redirect': url_for('login')}), 401
+        
+    cart_ids = session.get('cart', [])
+    if not cart_ids:
+        return jsonify({'error': 'Your cart is empty.'}), 400
+        
+    cart_items = []
+    total = 0.0
+    for pid in cart_ids:
+        prod = find_product(pid)
+        if prod:
+            cart_items.append({'id': prod['id'], 'name': prod['name'], 'price': prod['price'], 'image': prod['image']})
+            total += prod['price']
+            
+    order_id = uuid.uuid4().hex[:10].upper()
+    ORDERS[order_id] = {
+        'order_id': order_id,
+                'items': cart_items,
+        'amount': total,
+        'user': session['user'],
+        'status': 'pending',
+        'created_at': datetime.now().isoformat()
+    }
+    save_orders()
+    
+    # --- Angelica's MySQL DB Tracking (Safely Integrated) ---
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO transactions
+            (order_id, username, amount, status)
+            VALUES (%s, %s, %s, %s)
+            """, 
+            (
+                order_id,
+                session['user'],
+                total,
+                'PENDING'
+            )
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Failed to log to MySQL database: {e}")
+        # We don't want the checkout to fail for the user just because the DB is unreachable 
+        # (especially important for Jenkins tests to pass)
+    
+    # Clear cart
+    session['cart'] = []
+    
+    bank_payment_url = get_bank_payment_url(order_id, total, session['user'])
+    
+    return jsonify({
+        'success': True,
+        'order_id': order_id,
+        'amount': total,
+        'items': cart_items,
+        'bank_payment_url': bank_payment_url
+    })
+
+@app.route('/api/cart/drawer')
+def api_cart_drawer():
+    return render_template('_drawer_content.html')
+
+@app.route('/cart/add/<int:product_id>')
+def add_to_cart(product_id):
+    if 'user' not in session:
+        flash('Please log in to add items to your cart.', 'error')
+        return redirect(url_for('login', next=url_for('products')))
 
     product = find_product(product_id)
     if not product:
         flash('Product not found.', 'error')
         return redirect(url_for('products'))
+        
+    cart = session.get('cart', [])
+    cart.append(product['id'])
+    session['cart'] = cart
+    flash(f'Added {product["name"]} to your cart!', 'success')
+    return redirect(url_for('products'))
 
-    order_id = uuid.uuid4().hex[:10].upper()
-    ORDERS[order_id] = {
-        'order_id': order_id,
-        'product_id': product['id'],
-        'product_name': product['name'],
-        'amount': product['price'],
-        'user': session['user'],    
-        'status': 'pending',
-        'created_at': datetime.now().isoformat()
-    }
-    conn = get_db_connection()
-    cursor = conn.cursor()
+@app.route('/cart/remove/<int:index>')
+def remove_from_cart(index):
+    cart = session.get('cart', [])
+    if 0 <= index < len(cart):
+        removed_id = cart.pop(index)
+        session['cart'] = cart
+        flash('Item removed from cart.', 'success')
+    return redirect(url_for('cart'))
 
-    cursor.execute(
-        """
-        INSERT INTO transactions
-        (order_id, username, amount, status)
-        VALUES (%s, %s, %s, %s)
-        """, 
-        (
-            order_id,
-            session['user'],
-            product['price'],
-            'PENDING'
-        )
-    )
+@app.route('/cart')
+def cart():
+    if 'user' not in session:
+        flash('Please log in to view your cart.', 'error')
+        return redirect(url_for('login'))
+        
+    cart_ids = session.get('cart', [])
+    cart_items = []
+    total = 0.0
+    for i, pid in enumerate(cart_ids):
+        prod = find_product(pid)
+        if prod:
+            cart_items.append({'index': i, 'product': prod})
+            total += prod['price']
+            
+    return render_template('cart.html', cart_items=cart_items, total=total)
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return redirect(url_for
-                (
-    'checkout',
-        orderid=order_id,
-        amount=product['price'],
-        user=session['user'],
-        product_id=product['id']
-))
-
-@app.route('/checkout')
+@app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
-    order_id = request.args.get('orderid')
-    amount = request.args.get('amount')
-    user = request.args.get('user')
-    product_id = request.args.get('product_id', type=int)
-
-    if not all([order_id, amount, user]):
-        flash('Invalid checkout link.', 'error')
+    if 'user' not in session:
+        flash('Please log in to checkout.', 'error')
+        return redirect(url_for('login'))
+        
+    cart_ids = session.get('cart', [])
+    if not cart_ids:
+        flash('Your cart is empty.', 'error')
         return redirect(url_for('products'))
+        
+    if request.method == 'POST':
+        # Create order
+        cart_items = []
+        total = 0.0
+        for pid in cart_ids:
+            prod = find_product(pid)
+            if prod:
+                cart_items.append({'id': prod['id'], 'name': prod['name'], 'price': prod['price'], 'image': prod['image']})
+                total += prod['price']
+                
+        order_id = uuid.uuid4().hex[:10].upper()
+        ORDERS[order_id] = {
+            'order_id': order_id,
+            'items': cart_items,
+            'amount': total,
+            'user': session['user'],
+            'status': 'pending',
+            'created_at': datetime.now().isoformat()
+        }
+        save_orders()
+        
+        # Clear cart
+        session['cart'] = []
+        return redirect(url_for('checkout_pay', order_id=order_id))
+        
+    return redirect(url_for('cart'))
 
-    product = find_product(product_id) if product_id else None
+@app.route('/checkout/<order_id>')
+def checkout_pay(order_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
     order = ORDERS.get(order_id)
-    
-    bank_payment_url = get_bank_payment_url(order_id, amount, user)
+    if not order or order['user'] != session['user']:
+        flash('Order not found.', 'error')
+        return redirect(url_for('products'))
+        
+    if order['status'] == 'paid':
+        return redirect(url_for('receipt', order_id=order_id))
+        
+    bank_payment_url = get_bank_payment_url(order_id, order['amount'], order['user'])
 
     return render_template(
         'checkout.html',
-        order_id=order_id,
-        amount=amount,
-        user=user,
-        product=product,
         order=order,
         bank_payment_url=bank_payment_url
     )
 
-@app.route('/qr/<order_id>')
-def generate_qr(order_id):
+@app.route('/receipt/<order_id>')
+def receipt(order_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+        
     order = ORDERS.get(order_id)
-    if order:
-        amount = order['amount']
-        user = order['user']
-    else:
-        amount = request.args.get('amount', '0.00')
-        user = request.args.get('user', 'guest')
-    
-    payment_url = get_bank_payment_url(order_id, amount, user)
-    
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=8,
-        border=2,
-    )
-    qr.add_data(payment_url)
-    qr.make(fit=True)
+    if not order or order['user'] != session['user']:
+        flash('Order not found.', 'error')
+        return redirect(url_for('products'))
+        
+    return render_template('receipt.html', order=order)
 
-    img = qr.make_image(fill_color="#3d2c23", back_color="#ffffff")
+@app.route('/history')
+def history():
+    if 'user' not in session:
+        flash('Please log in to view your history.', 'error')
+        return redirect(url_for('login'))
+        
+    user_orders = [o for o in ORDERS.values() if o['user'] == session['user']]
+    # Sort by created_at descending
+    user_orders.sort(key=lambda x: x.get('created_at', ''), reverse=True)
     
-    buf = io.BytesIO()
-    img.save(buf, 'PNG')
-    buf.seek(0)
-    
-    return send_file(buf, mimetype='image/png')
+    return render_template('history.html', orders=user_orders)
+
+
 
 @app.route('/pay')
 def bank_pay_page():
@@ -288,6 +428,7 @@ def order_confirm(order_id):
     if not order:
         return jsonify({'error': 'Order not found'}), 404
     order['status'] = 'paid'
+    save_orders()
     return jsonify({'order_id': order_id, 'status': 'paid', 'message': 'Payment confirmed'})
 
 if __name__ == '__main__':

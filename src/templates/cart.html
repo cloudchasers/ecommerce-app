@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="cart-container" style="max-width: 800px; margin: 2rem auto; padding: 2rem; background: var(--bg-secondary); border-radius: 12px;">
+    <h1>Your Cart</h1>
+    {% if cart_items %}
+        <div class="cart-items" style="margin-top: 2rem;">
+            {% for item in cart_items %}
+            <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 2rem;">{{ item.product.image }}</span>
+                    <div>
+                        <h3 style="margin: 0;">{{ item.product.name }}</h3>
+                        <p style="margin: 0; color: var(--text-secondary);">₱{{ "%.2f"|format(item.product.price) }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('remove_from_cart', index=item.index) }}" class="btn" style="color: #dc2626; text-decoration: none;">Remove</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-total" style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 1.25rem; font-weight: bold;">
+            <span>Total:</span>
+            <span>₱{{ "%.2f"|format(total) }}</span>
+        </div>
+        
+        <form action="{{ url_for('checkout') }}" method="POST" style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Proceed to Checkout</button>
+        </form>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't caught any clouds yet.</p>
+            <a href="{{ url_for('products') }}" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Treats</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

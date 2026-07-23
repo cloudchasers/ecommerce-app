@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="history-container" style="max-width: 900px; margin: 2rem auto; padding: 2rem; background: var(--bg-secondary); border-radius: 12px;">
+    <h1>Transaction History</h1>
+    
+    {% if orders %}
+        <div style="margin-top: 2rem;">
+            {% for order in orders %}
+            <div class="order-card" style="background: var(--bg-primary); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <strong>Order ID:</strong> <code>{{ order.order_id }}</code><br>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ order.created_at }}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-weight: bold; font-size: 1.2rem;">₱{{ "%.2f"|format(order.amount) }}</span><br>
+                        {% if order.status == 'paid' %}
+                            <span style="color: #16a34a; font-weight: bold;">✅ PAID</span>
+                        {% else %}
+                            <span style="color: #d97706; font-weight: bold;">⏳ PENDING</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin-bottom: 0.5rem;">Items:</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        {% for item in order['items'] %}
+                            <li style="padding: 0.25rem 0;">{{ item.image }} {{ item.name }} - ₱{{ "%.2f"|format(item.price) }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                {% if order.status != 'paid' %}
+                    <div style="margin-top: 1rem; text-align: right;">
+                        <a href="{{ url_for('checkout_pay', order_id=order.order_id) }}" class="btn-primary" style="text-decoration: none;">Complete Payment</a>
+                    </div>
+                {% else %}
+                    <div style="margin-top: 1rem; text-align: right;">
+                        <a href="{{ url_for('receipt', order_id=order.order_id) }}" class="btn-secondary" style="text-decoration: none;">View Receipt</a>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <h2>No orders found.</h2>
+            <p>You haven't placed any orders yet.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

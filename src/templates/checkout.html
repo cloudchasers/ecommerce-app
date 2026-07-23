@@ -1,129 +1,77 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="checkout-container">
-
-    <!-- ===== WAITING FOR PAYMENT STATE ===== -->
-    <div id="payment-waiting" class="checkout-card">
+<section class="checkout-container" style="max-width: 600px; margin: 3rem auto;">
+    <div class="checkout-card">
         <div class="checkout-icon">💳</div>
-        <h1>Scan to Pay</h1>
-        <p class="checkout-subtitle">Scan the QR code below using your banking app to authorize payment.</p>
+        <h1>Checkout</h1>
+        <p class="checkout-subtitle">Please review your order and proceed to payment.</p>
 
         <div class="checkout-details">
             <div class="detail-row">
                 <span class="detail-label">Order ID</span>
-                <span class="detail-value"><code>{{ order_id }}</code></span>
+                <span class="detail-value"><code>{{ order.order_id }}</code></span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">Customer</span>
-                <span class="detail-value">{{ user }}</span>
+            
+            <div style="margin: 1.5rem 0; text-align: left;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-secondary);">Items</h4>
+                <ul style="list-style: none; padding: 0;">
+                    {% for item in order['items'] %}
+                        <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                            <span>{{ item.image }} {{ item.name }}</span>
+                            <span>₱{{ "%.2f"|format(item.price) }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
-            {% if product %}
-            <div class="detail-row">
-                <span class="detail-label">Item</span>
-                <span class="detail-value">{{ product.image }} {{ product.name }}</span>
-            </div>
-            {% endif %}
+            
             <div class="detail-row detail-total">
-                <span class="detail-label">Amount</span>
-                <span class="detail-value">${{ "%.2f"|format(amount|float) }}</span>
+                <span class="detail-label">Total Amount</span>
+                <span class="detail-value">₱{{ "%.2f"|format(order.amount) }}</span>
             </div>
         </div>
 
-        <!-- Real Generated QR Code -->
-        <div class="qr-section">
-            <div class="qr-placeholder" style="padding: 1rem;">
-                <img src="{{ url_for('generate_qr', order_id=order_id) }}" alt="Payment QR Code" style="width: 220px; height: 220px; display: block; border-radius: 8px;">
-                <p style="margin-top: 0.75rem;">Scan with your Banking App</p>
-            </div>
-        </div>
-
-        <div class="checkout-status" id="status-display">
-            <span class="status-pending">⏳ AWAITING PAYMENT</span>
-        </div>
-
-        <div class="polling-indicator">
-            <div class="pulse-dot"></div>
-            <span>Listening for bank payment confirmation...</span>
-        </div>
-
-        <!-- Direct Link / Simulation Box -->
-        <div class="checkout-url-box" style="margin-top: 2rem;">
-            <p class="checkout-url-label">Encoded QR Target URL (Banking App Endpoint)</p>
-            <code class="checkout-url">{{ bank_payment_url }}</code>
-            <div style="margin-top: 1rem;">
-                <a href="{{ bank_payment_url }}" target="_blank" class="btn-primary" style="display: inline-block; text-decoration: none; font-size: 0.9rem; padding: 0.6rem 1.5rem;">📱 Simulate Scanning QR (Open Bank App)</a>
-            </div>
+        <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <a href="{{ bank_payment_url }}" target="_blank" class="btn-primary" style="text-decoration: none; padding: 1rem; font-size: 1.1rem; text-align: center;">
+                🏦 Pay with Banking App
+            </a>
+            
+            <form action="{{ url_for('order_confirm', order_id=order.order_id) }}" method="POST" id="skip-payment-form">
+                <button type="button" onclick="skipPayment()" class="btn" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+                    ⏩ Skip Payment (Testing)
+                </button>
+            </form>
         </div>
     </div>
-
-    <!-- ===== PAYMENT CONFIRMED STATE ===== -->
-    <div id="payment-confirmed" class="checkout-card" style="display: none;">
-        <div class="checkout-icon confirmed-icon">✅</div>
-        <h1>Payment Confirmed!</h1>
-        <p class="checkout-subtitle">Thank you for your order. We are preparing your pastries!</p>
-
-        <div class="checkout-details">
-            <div class="detail-row">
-                <span class="detail-label">Order ID</span>
-                <span class="detail-value"><code>{{ order_id }}</code></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Customer</span>
-                <span class="detail-value">{{ user }}</span>
-            </div>
-            {% if product %}
-            <div class="detail-row">
-                <span class="detail-label">Item</span>
-                <span class="detail-value">{{ product.image }} {{ product.name }}</span>
-            </div>
-            {% endif %}
-            <div class="detail-row detail-total">
-                <span class="detail-label">Amount Paid</span>
-                <span class="detail-value">${{ "%.2f"|format(amount|float) }}</span>
-            </div>
-        </div>
-
-        <div class="checkout-status">
-            <span class="status-paid">✅ PAID</span>
-        </div>
-
-        <a href="{{ url_for('products') }}" class="btn-primary" style="display: inline-block; margin-top: 2rem; border: none; text-decoration: none;">Continue Shopping</a>
-    </div>
-
 </section>
 
 <script>
-(function() {
-    const orderId = "{{ order_id }}";
-    const waitingEl = document.getElementById('payment-waiting');
-    const confirmedEl = document.getElementById('payment-confirmed');
-    let pollInterval;
+async function skipPayment() {
+    try {
+        const res = await fetch("{{ url_for('order_confirm', order_id=order.order_id) }}", { method: 'POST' });
+        if (res.ok) {
+            window.location.href = "{{ url_for('receipt', order_id=order.order_id) }}";
+        } else {
+            alert('Error skipping payment.');
+        }
+    } catch (err) {
+        alert('Network error.');
+    }
+}
 
-    // Poll the server for payment status every 3 seconds
-    function startPolling() {
-        pollInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/order/status/${orderId}`);
-                const data = await res.json();
-                if (data.status === 'paid') {
-                    clearInterval(pollInterval);
-                    showConfirmation();
-                }
-            } catch (err) {
-                console.error('Polling error:', err);
+// Poll for payment success
+setInterval(async () => {
+    try {
+        const res = await fetch("{{ url_for('order_status', order_id=order.order_id) }}");
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'paid') {
+                window.location.href = "{{ url_for('receipt', order_id=order.order_id) }}";
             }
-        }, 3000);
+        }
+    } catch (err) {
+        // Ignore network errors during polling
     }
-
-    function showConfirmation() {
-        waitingEl.style.display = 'none';
-        confirmedEl.style.display = 'block';
-        confirmedEl.classList.add('fade-in');
-    }
-
-    // Start polling on page load
-    startPolling();
-})();
+}, 3000);
 </script>
 {% endblock %}
