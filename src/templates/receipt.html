@@ -5,7 +5,7 @@
     <div class="checkout-card">
         <div class="checkout-icon" style="font-size: 4rem; color: #16a34a;">✅</div>
         <h1>Payment Confirmed!</h1>
-        <p class="checkout-subtitle">Thank you for your order, {{ order.user }}. We are preparing your pastries!</p>
+        <p class="checkout-subtitle">Thank you for your order, {{ order.user }}. We are preparing your treats!</p>
 
         <div class="checkout-details">
             <div class="detail-row">
@@ -19,7 +19,7 @@
                     {% for item in order['items'] %}
                         <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
                             <span>{{ item.image }} {{ item.name }}</span>
-                            <span>${{ "%.2f"|format(item.price) }}</span>
+                            <span>₱{{ "%.2f"|format(item.price) }}</span>
                         </li>
                     {% endfor %}
                 </ul>
@@ -27,7 +27,7 @@
             
             <div class="detail-row detail-total">
                 <span class="detail-label">Amount Paid</span>
-                <span class="detail-value">${{ "%.2f"|format(order.amount) }}</span>
+                <span class="detail-value">₱{{ "%.2f"|format(order.amount) }}</span>
             </div>
         </div>
 

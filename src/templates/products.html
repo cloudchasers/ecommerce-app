@@ -2,8 +2,8 @@
 
 {% block content %}
 <section class="products-header">
-    <h1>Our Pastries</h1>
-    <p>Handcrafted delicacies for every occasion.</p>
+    <h1>Our Treats</h1>
+    <p>Handcrafted cloud treats for every dreamer.</p>
     
     <div class="search-bar">
         <form action="{{ url_for('products') }}" method="GET" style="width: 100%; display: flex; position: relative;">
@@ -21,14 +21,14 @@
             <h3 class="product-name">{{ product.name }}</h3>
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-footer">
-                <span class="product-price">${{ "%.2f"|format(product.price) }}</span>
+                <span class="product-price">₱{{ "%.2f"|format(product.price) }}</span>
                 <button onclick="addToCart({{ product.id }})" class="btn-buy">Add to Cart</button>
             </div>
         </div>
         {% endfor %}
     {% else %}
         <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 3rem;">
-            <h2>No pastries found matching "{{ search_query }}"</h2>
+            <h2>No cloud treats found matching "{{ search_query }}"</h2>
             <p>Try searching for something else!</p>
         </div>
     {% endif %}

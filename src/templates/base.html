@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sweetcrumb Pastries</title>
+    <title>CloudChasers</title>
     <!-- Google Fonts for Modern Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <a href="{{ url_for('home') }}" class="logo">Sweetcrumb<span>.</span></a>
+        <a href="{{ url_for('home') }}" class="logo">CloudChasers<span>.</span></a>
         <nav>
             <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('products') }}">Our Pastries</a>
+            <a href="{{ url_for('products') }}">Our Treats</a>
             {% if session.get('user') %}
                 <a href="#" onclick="openDrawer(); return false;" id="nav-cart-btn">Cart ({{ global_cart_items|length }})</a>
                 <a href="{{ url_for('history') }}">History</a>
@@ -40,7 +40,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 Sweetcrumb Pastries. All rights reserved.</p>
+        <p>&copy; 2026 CloudChasers. All rights reserved.</p>
     </footer>
     <!-- Side Drawer Overlay and Container -->
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
@@ -120,7 +120,7 @@
                         <div class="drawer-checkout-summary">
                             <h3>Checkout Summary</h3>
                             <p>Order ID: <strong>${data.order_id}</strong></p>
-                            <p>Amount to pay: <strong>$${data.amount.toFixed(2)}</strong></p>
+                            <p>Amount to pay: <strong>₱${data.amount.toFixed(2)}</strong></p>
                             <div style="margin-top: 2rem;">
                                 <a href="${data.bank_payment_url}" target="_blank" class="btn-primary pay-banking-btn" style="display: block; text-align: center; text-decoration: none; padding: 1rem;">
                                     Pay with Banking App

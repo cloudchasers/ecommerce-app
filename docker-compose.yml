@@ -15,4 +15,4 @@ services:
       - "5000"
     environment:
       BANK_PUBLIC_BASE: http://44.222.238.61
-      MERCHANT_ACCOUNT: sweetcrumb-pastries
+      MERCHANT_ACCOUNT: cloudchasers

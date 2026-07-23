@@ -14,7 +14,7 @@
                         <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ order.created_at }}</span>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-weight: bold; font-size: 1.2rem;">${{ "%.2f"|format(order.amount) }}</span><br>
+                        <span style="font-weight: bold; font-size: 1.2rem;">₱{{ "%.2f"|format(order.amount) }}</span><br>
                         {% if order.status == 'paid' %}
                             <span style="color: #16a34a; font-weight: bold;">✅ PAID</span>
                         {% else %}
@@ -27,7 +27,7 @@
                     <h4 style="margin-bottom: 0.5rem;">Items:</h4>
                     <ul style="list-style: none; padding: 0;">
                         {% for item in order['items'] %}
-                            <li style="padding: 0.25rem 0;">{{ item.image }} {{ item.name }} - ${{ "%.2f"|format(item.price) }}</li>
+                            <li style="padding: 0.25rem 0;">{{ item.image }} {{ item.name }} - ₱{{ "%.2f"|format(item.price) }}</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -38,7 +38,7 @@
                     </div>
                 {% else %}
                     <div style="margin-top: 1rem; text-align: right;">
-                        <a href="{{ url_for('receipt', order_id=order.order_id) }}" class="btn" style="text-decoration: none;">View Receipt</a>
+                        <a href="{{ url_for('receipt', order_id=order.order_id) }}" class="btn-secondary" style="text-decoration: none;">View Receipt</a>
                     </div>
                 {% endif %}
             </div>

@@ -19,7 +19,7 @@
                     {% for item in order['items'] %}
                         <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
                             <span>{{ item.image }} {{ item.name }}</span>
-                            <span>${{ "%.2f"|format(item.price) }}</span>
+                            <span>₱{{ "%.2f"|format(item.price) }}</span>
                         </li>
                     {% endfor %}
                 </ul>
@@ -27,7 +27,7 @@
             
             <div class="detail-row detail-total">
                 <span class="detail-label">Total Amount</span>
-                <span class="detail-value">${{ "%.2f"|format(order.amount) }}</span>
+                <span class="detail-value">₱{{ "%.2f"|format(order.amount) }}</span>
             </div>
         </div>
 
