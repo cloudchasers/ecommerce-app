@@ -24,7 +24,7 @@ pipeline {
         sh '''
             ssh -o StrictHostKeyChecking=no \
             -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
-            ubuntu@54.227.120.126 \
+            ubuntu@3.90.15.65 \
             "
             cd /home/ubuntu/ecommerce-app &&
             git pull &&
