@@ -19,22 +19,21 @@ pipeline {
             }
         }
 
-    stage('Deploy to Dev EC2') {
-    steps {
-        sh '''
-            ssh -o StrictHostKeyChecking=no \
-            -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
-            ubuntu@3.90.15.65 \
-            "
-            cd /home/ubuntu/ecommerce-app &&
-            git pull &&
-            docker compose down &&
-            docker compose up -d --build
-            "
-        '''
-    }
-}
-        
+        stage('Deploy to Dev EC2') {
+            steps {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no \
+                    -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
+                    ubuntu@3.90.15.65 \
+                    "
+                    cd /home/ubuntu/ecommerce-app &&
+                    git pull &&
+                    docker compose down &&
+                    docker compose up -d --build
+                    "
+                '''
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -89,25 +88,26 @@ pipeline {
         }
 
         stage('Redeploy ACI') {
-           steps {
-                sh '''
-                    az login --identity || true
-                    az container delete \
-                      --resource-group rg-azuser7688_mml.local-ruAwg \
-                      --name cg-cloudchasers-apps \
-                      --yes
-                    sleep 30
-                    az container create \
-                      --resource-group rg-azuser7688_mml.local-ruAwg \
-                      --file aci.yaml
-                '''
-            }
+            steps {
+                sh '''
+                    az container delete \
+                      --resource-group rg-azuser7688_mml.local-ruAwg \
+                      --name cg-cloudchasers-apps \
+                      --yes
+
+                    sleep 60
+
+                    az container create \
+                      --resource-group rg-azuser7688_mml.local-ruAwg \
+                      --file /home/ubuntu/aci.yaml
+                '''
+            }
         }
     }
 
     post {
         success {
-            echo 'Ecommerce image pushed to ACR successfully'
+            echo 'Ecommerce image pushed to ACR and ACI redeployed successfully'
         }
 
         failure {
