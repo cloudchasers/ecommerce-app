@@ -106,6 +106,8 @@ pipeline {
                           --name cg-cloudchasers-apps \
                           --image ${REGISTRY}/${IMAGE_NAME}:${TAG} \
                           --os-type Linux \
+                          --cpu 1 \
+                          --memory 1.5 \
                           --registry-login-server ${REGISTRY} \
                           --registry-username "$ACR_USER" \
                           --registry-password "$ACR_PASS" \
