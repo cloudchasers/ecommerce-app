@@ -105,6 +105,7 @@ pipeline {
                           --resource-group rg-azuser7688_mml.local-ruAwg \
                           --name cg-cloudchasers-apps \
                           --image ${REGISTRY}/${IMAGE_NAME}:${TAG} \
+                          --os-type Linux \
                           --registry-login-server ${REGISTRY} \
                           --registry-username "$ACR_USER" \
                           --registry-password "$ACR_PASS" \
