@@ -103,16 +103,7 @@ pipeline {
 
                         az container create \
                           --resource-group rg-azuser7688_mml.local-ruAwg \
-                          --name cg-cloudchasers-apps \
-                          --image ${REGISTRY}/${IMAGE_NAME}:${TAG} \
-                          --os-type Linux \
-                          --cpu 1 \
-                          --memory 1.5 \
-                          --registry-login-server ${REGISTRY} \
-                          --registry-username "$ACR_USER" \
-                          --registry-password "$ACR_PASS" \
-                          --dns-name-label cg-cloudchasers-app \
-                          --ports 5000
+                          --file aci.yaml
                     '''
                 }
             }
