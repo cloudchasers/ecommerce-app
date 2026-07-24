@@ -95,11 +95,11 @@ pipeline {
                       --name cg-cloudchasers-apps \
                       --yes
 
-                    sleep 60
+                    sleep 5
 
                     az container create \
                       --resource-group rg-azuser7688_mml.local-ruAwg \
-                      --file /home/ubuntu/aci.yaml
+                      --file aci.yaml
                 '''
             }
         }
