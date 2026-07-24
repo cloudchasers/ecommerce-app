@@ -10,20 +10,21 @@
 </head>
 <body>
     <header>
-        <a href="{{ url_for('home') }}" class="logo">APRIL<span>.</span></a>
+        <a href="{{ url_for('home') }}" class="logo" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">APRIL<span>.</span></a>
         <nav>
-            <a href="{{ url_for('home') }}">Home</a>
-            <a href="{{ url_for('products') }}">Our Treats</a>
+            <a href="{{ url_for('home') }}" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">Home</a>
+            <a href="{{ url_for('products') }}" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')">Our Treats</a>
             {% if session.get('user') %}
                 <a href="#" onclick="openDrawer(); return false;" id="nav-cart-btn">Cart ({{ global_cart_items|length }})</a>
-                <a href="{{ url_for('history') }}">History</a>
+                <a href="{{ url_for('history') }}" onclick="showLoadingScreen('Loading History...', 'Retrieving your past transactions')">History</a>
                 <span class="nav-user">Hi, {{ session.name }}</span>
-                <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+                <a href="{{ url_for('logout') }}" class="nav-logout" onclick="showLoadingScreen('Logging Out...', 'Clearing your session securely')">Logout</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="nav-login">Login</a>
+                <a href="{{ url_for('login') }}" class="nav-login" onclick="showLoadingScreen('Loading Portal...', 'Opening secure login page')">Login</a>
             {% endif %}
         </nav>
     </header>
+
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -42,6 +43,18 @@
     <footer>
         <p>&copy; 2026 CloudChasers. All rights reserved.</p>
     </footer>
+    <!-- Global Loading Screen Overlay -->
+    <div class="loading-screen" id="globalLoadingScreen">
+        <div class="loading-box">
+            <div class="cloud-spinner">
+                <div class="spinner-ring"></div>
+                <div class="cloud-icon-pulse">☁️</div>
+            </div>
+            <div class="loading-text" id="globalLoadingText">Processing Request...</div>
+            <div class="loading-subtext" id="globalLoadingSubtext">Please wait a moment</div>
+        </div>
+    </div>
+
     <!-- Side Drawer Overlay and Container -->
     <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
     <div class="drawer" id="cartDrawer">
@@ -55,10 +68,30 @@
     </div>
 
     <script>
+        function showLoadingScreen(title = 'Processing Request...', subtitle = 'Please wait a moment') {
+            const screen = document.getElementById('globalLoadingScreen');
+            document.getElementById('globalLoadingText').textContent = title;
+            document.getElementById('globalLoadingSubtext').textContent = subtitle;
+            if (screen) screen.classList.add('active');
+        }
+
+        function hideLoadingScreen() {
+            const screen = document.getElementById('globalLoadingScreen');
+            if (screen) screen.classList.remove('active');
+        }
+
+        // Automatically trigger loading screen on all form submissions
+        document.addEventListener('submit', function(e) {
+            // Check if form marked with no-loading
+            if (!e.target.classList.contains('no-loading')) {
+                showLoadingScreen('Submitting Form...', 'Preparing your request');
+            }
+        });
+
         function openDrawer() {
             document.getElementById('cartDrawer').classList.add('open');
             document.getElementById('drawerOverlay').classList.add('open');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
         }
 
         function closeDrawer() {
@@ -66,9 +99,8 @@
             document.getElementById('drawerOverlay').classList.remove('open');
             document.body.style.overflow = '';
             
-            // If we were on checkout state, reset it when closing
             if (document.getElementById('drawerContent').innerHTML.includes('pay-banking-btn')) {
-                refreshCartDrawer(); // Reset to cart view for next time
+                refreshCartDrawer();
             }
         }
 
@@ -78,7 +110,6 @@
                 const html = await response.text();
                 document.getElementById('drawerContent').innerHTML = html;
                 
-                // Also update the nav cart count
                 const itemCountMatch = html.match(/drawer-item-remove/g);
                 const count = itemCountMatch ? itemCountMatch.length : 0;
                 const navCartBtn = document.getElementById('nav-cart-btn');
@@ -91,19 +122,21 @@
         }
 
         async function removeFromCart(index) {
+            showLoadingScreen('Updating Cart...', 'Removing item from your cart');
             try {
                 const response = await fetch(`/api/cart/remove/${index}`, { method: 'POST' });
                 if (response.ok) {
-                    refreshCartDrawer();
+                    await refreshCartDrawer();
                 }
             } catch (err) {
                 console.error(err);
+            } finally {
+                hideLoadingScreen();
             }
         }
 
         async function proceedToCheckout() {
-            const drawerContent = document.getElementById('drawerContent');
-            drawerContent.innerHTML = '<div style="padding: 2rem; text-align: center;">Processing...</div>';
+            showLoadingScreen('Preparing Checkout...', 'Generating order reference and securing payment');
             
             try {
                 const response = await fetch("{{ url_for('api_checkout') }}", { method: 'POST' });
@@ -115,46 +148,60 @@
                 }
                 
                 if (data.success) {
-                    // Render Checkout Summary in drawer
+                    const drawerContent = document.getElementById('drawerContent');
                     drawerContent.innerHTML = `
                         <div class="drawer-checkout-summary">
                             <h3>Checkout Summary</h3>
                             <p>Order ID: <strong>${data.order_id}</strong></p>
                             <p>Amount to pay: <strong>₱${data.amount.toFixed(2)}</strong></p>
                             <div style="margin-top: 2rem;">
-                                <a href="${data.bank_payment_url}" target="_blank" class="btn-primary pay-banking-btn" style="display: block; text-align: center; text-decoration: none; padding: 1rem;">
+                                <a href="${data.bank_payment_url}" target="_blank" class="btn-primary pay-banking-btn" onclick="showLoadingScreen('Opening Banking App...', 'Redirecting to payment gateway')" style="display: block; text-align: center; text-decoration: none; padding: 1rem;">
                                     Pay with Banking App
                                 </a>
                             </div>
                             <div id="payment-status-poll" style="margin-top: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
                                 <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                                     <div class="pulse-dot"></div>
-                                    Waiting for payment...
+                                    Waiting for payment confirmation...
                                 </div>
                             </div>
                         </div>
                     `;
-                    // Clear the cart count in nav
                     const navCartBtn = document.getElementById('nav-cart-btn');
                     if (navCartBtn) navCartBtn.textContent = 'Cart (0)';
                     
-                    // Start polling for payment success
                     const orderId = data.order_id;
+                    let pollElapsed = 0;
+                    const maxPollSeconds = 300; // 5 minute payment waiting window limit
                     const pollInterval = setInterval(async () => {
+                        pollElapsed += 2;
+                        if (pollElapsed >= maxPollSeconds) {
+                            clearInterval(pollInterval);
+                            const pollNotice = document.getElementById('payment-status-poll');
+                            if (pollNotice) {
+                                pollNotice.innerHTML = `
+                                    <div style="color: #d97706; padding: 0.8rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
+                                        ⏳ Payment window timed out. If you paid, view your <a href="/history" style="color: #b45309; font-weight: bold;">History</a>.
+                                    </div>
+                                `;
+                            }
+                            return;
+                        }
+
                         try {
                             const res = await fetch(`/api/order/status/${orderId}`);
                             const statusData = await res.json();
                             if (statusData.status === 'paid') {
                                 clearInterval(pollInterval);
-                                // Redirect to receipt page when paid
+                                showLoadingScreen('Payment Confirmed!', 'Loading your receipt...');
                                 window.location.href = `/receipt/${orderId}`;
                             }
                         } catch (e) {
                             console.error('Polling error', e);
                         }
                     }, 2000);
+
                     
-                    // Stop polling if drawer is closed to prevent infinite loops if they abandon
                     const overlay = document.getElementById('drawerOverlay');
                     const originalClose = overlay.onclick;
                     const stopPollingAndClose = () => {
@@ -165,15 +212,18 @@
                     overlay.onclick = stopPollingAndClose;
                     document.querySelector('.drawer-close').onclick = stopPollingAndClose;
                 } else {
-                    drawerContent.innerHTML = `<div style="padding: 2rem; color: red;">Error: ${data.error || 'Failed to checkout'}</div>`;
-                    setTimeout(refreshCartDrawer, 2000);
+                    alert(data.error || 'Failed to checkout');
+                    setTimeout(refreshCartDrawer, 1000);
                 }
             } catch (err) {
                 console.error(err);
-                drawerContent.innerHTML = '<div style="padding: 2rem; color: red;">Network error. Please try again.</div>';
-                setTimeout(refreshCartDrawer, 2000);
+                alert('Network error. Please try again.');
+                setTimeout(refreshCartDrawer, 1000);
+            } finally {
+                hideLoadingScreen();
             }
         }
     </script>
 </body>
 </html>
+

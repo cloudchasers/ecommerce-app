@@ -18,10 +18,11 @@
                 <ul style="list-style: none; padding: 0;">
                     {% for item in order['items'] %}
                         <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
-                            <span>{{ item.image }} {{ item.name }}</span>
-                            <span>₱{{ "%.2f"|format(item.price) }}</span>
+                            <span>{{ item.image if item.image is defined else '🧁' }} {{ item.product if item.product is defined else item.name }}</span>
+                            <span>₱{{ "%.2f"|format(item.product_price|float if item.product_price is defined else item.price|float) }}</span>
                         </li>
                     {% endfor %}
+
                 </ul>
             </div>
             
@@ -36,9 +37,10 @@
         </div>
 
         <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-            <a href="{{ url_for('products') }}" class="btn-primary" style="text-decoration: none;">Continue Shopping</a>
-            <a href="{{ url_for('history') }}" class="btn-secondary" style="text-decoration: none;">View History</a>
+            <a href="{{ url_for('products') }}" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')" class="btn-primary" style="text-decoration: none;">Continue Shopping</a>
+            <a href="{{ url_for('history') }}" onclick="showLoadingScreen('Loading History...', 'Retrieving your past transactions')" class="btn-secondary" style="text-decoration: none;">View History</a>
         </div>
+
     </div>
 </section>
 {% endblock %}

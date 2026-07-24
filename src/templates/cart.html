@@ -14,7 +14,7 @@
                         <p style="margin: 0; color: var(--text-secondary);">₱{{ "%.2f"|format(item.product.price) }}</p>
                     </div>
                 </div>
-                <a href="{{ url_for('remove_from_cart', index=item.index) }}" class="btn" style="color: #dc2626; text-decoration: none;">Remove</a>
+                <a href="{{ url_for('remove_from_cart', index=item.index) }}" onclick="showLoadingScreen('Updating Cart...', 'Removing item from cart')" class="btn" style="color: #dc2626; text-decoration: none;">Remove</a>
             </div>
             {% endfor %}
         </div>
@@ -31,8 +31,9 @@
         <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
             <h2>Your cart is empty</h2>
             <p>Looks like you haven't caught any clouds yet.</p>
-            <a href="{{ url_for('products') }}" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Treats</a>
+            <a href="{{ url_for('products') }}" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">Browse Treats</a>
         </div>
     {% endif %}
 </section>
+
 {% endblock %}

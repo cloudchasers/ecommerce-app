@@ -22,7 +22,8 @@
             <p class="product-desc">{{ product.description }}</p>
             <div class="product-footer">
                 <span class="product-price">₱{{ "%.2f"|format(product.price) }}</span>
-                <button onclick="addToCart({{ product.id }})" class="btn-buy">Add to Cart</button>
+                <button onclick="addToCart({{ product.id }}, event)" class="btn-buy">Add to Cart</button>
+
             </div>
         </div>
         {% endfor %}
@@ -35,13 +36,17 @@
 </section>
 
 <script>
-async function addToCart(productId) {
+async function addToCart(productId, event) {
+    showLoadingScreen('Adding to Cart...', 'Adding your sweet treat');
+    const btn = event ? event.target : null;
+    if (btn) btn.classList.add('is-loading');
+
     try {
         const response = await fetch(`/api/cart/add/${productId}`, { method: 'POST' });
         const data = await response.json();
         
         if (response.status === 401 && data.redirect) {
-            window.location.href = data.redirect; // Redirect to login
+            window.location.href = data.redirect;
             return;
         }
         
@@ -54,7 +59,11 @@ async function addToCart(productId) {
     } catch (err) {
         console.error(err);
         alert('Network error. Please try again.');
+    } finally {
+        if (btn) btn.classList.remove('is-loading');
+        hideLoadingScreen();
     }
 }
 </script>
+
 {% endblock %}

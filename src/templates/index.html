@@ -9,7 +9,8 @@
         and the finest ingredients. Indulge in our delicious selection of cakes,
         croissants, cookies, breads, and sweet treats, baked fresh daily to bring
         warmth and happiness to every bite.
-    </p>
-</a>
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('products') }}" class="btn-primary" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')" style="text-decoration: none;">Explore Our Treats</a>
+    </div>
 </section>
-{% endblock %}
+{% endblock %}

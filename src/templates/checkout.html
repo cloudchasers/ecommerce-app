@@ -18,10 +18,11 @@
                 <ul style="list-style: none; padding: 0;">
                     {% for item in order['items'] %}
                         <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
-                            <span>{{ item.image }} {{ item.name }}</span>
-                            <span>₱{{ "%.2f"|format(item.price) }}</span>
+                            <span>{{ item.image if item.image is defined else '🧁' }} {{ item.product if item.product is defined else item.name }}</span>
+                            <span>₱{{ "%.2f"|format(item.product_price|float if item.product_price is defined else item.price|float) }}</span>
                         </li>
                     {% endfor %}
+
                 </ul>
             </div>
             
@@ -32,11 +33,11 @@
         </div>
 
         <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
-            <a href="{{ bank_payment_url }}" target="_blank" class="btn-primary" style="text-decoration: none; padding: 1rem; font-size: 1.1rem; text-align: center;">
+            <a href="{{ bank_payment_url }}" target="_blank" onclick="showLoadingScreen('Opening Banking App...', 'Redirecting to payment gateway')" class="btn-primary" style="text-decoration: none; padding: 1rem; font-size: 1.1rem; text-align: center;">
                 🏦 Pay with Banking App
             </a>
             
-            <form action="{{ url_for('order_confirm', order_id=order.order_id) }}" method="POST" id="skip-payment-form">
+            <form action="{{ url_for('order_confirm', order_id=order.order_id) }}" method="POST" id="skip-payment-form" class="no-loading">
                 <button type="button" onclick="skipPayment()" class="btn" style="width: 100%; padding: 1rem; font-size: 1.1rem; background: var(--bg-secondary); border: 1px solid var(--border-color);">
                     ⏩ Skip Payment (Testing)
                 </button>
@@ -47,25 +48,38 @@
 
 <script>
 async function skipPayment() {
+    showLoadingScreen('Processing Payment...', 'Confirming test transaction');
     try {
         const res = await fetch("{{ url_for('order_confirm', order_id=order.order_id) }}", { method: 'POST' });
         if (res.ok) {
+            showLoadingScreen('Payment Approved!', 'Redirecting to receipt...');
             window.location.href = "{{ url_for('receipt', order_id=order.order_id) }}";
         } else {
             alert('Error skipping payment.');
+            hideLoadingScreen();
         }
     } catch (err) {
         alert('Network error.');
+        hideLoadingScreen();
     }
 }
 
-// Poll for payment success
-setInterval(async () => {
+// Poll for payment success with 5-minute timeout limit
+let checkoutPollElapsed = 0;
+const maxCheckoutPoll = 300;
+const checkoutPoll = setInterval(async () => {
+    checkoutPollElapsed += 3;
+    if (checkoutPollElapsed >= maxCheckoutPoll) {
+        clearInterval(checkoutPoll);
+        return;
+    }
     try {
         const res = await fetch("{{ url_for('order_status', order_id=order.order_id) }}");
         if (res.ok) {
             const data = await res.json();
             if (data.status === 'paid') {
+                clearInterval(checkoutPoll);
+                showLoadingScreen('Payment Confirmed!', 'Loading your receipt...');
                 window.location.href = "{{ url_for('receipt', order_id=order.order_id) }}";
             }
         }
@@ -73,5 +87,7 @@ setInterval(async () => {
         // Ignore network errors during polling
     }
 }, 3000);
+
 </script>
+
 {% endblock %}

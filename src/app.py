@@ -19,12 +19,37 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from src.config import load_config
 from src.lib.db import init_db
 
+from datetime import datetime, timedelta, timezone
+
 app = Flask(__name__)
 app.config.from_object(load_config())
 app.secret_key = app.config.get('SECRET_KEY', 'dev-fallback-secret')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
+
+@app.before_request
+def check_session_timeout():
+    session.permanent = True
+    # Exclude static assets from resetting session timeout
+    if request.endpoint == 'static':
+        return
+
+    if 'user' in session:
+        now = datetime.now(timezone.utc).timestamp()
+        last_active = session.get('last_active')
+        timeout_seconds = 15 * 60  # 15 minutes inactivity limit
+        
+        if last_active and (now - last_active > timeout_seconds):
+            session.clear()
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Session expired due to inactivity. Please log in again.', 'redirect': url_for('login')}), 401
+            flash('Session expired due to inactivity. Please log in again.', 'error')
+            return redirect(url_for('login', next=request.path))
+            
+        session['last_active'] = now
 
 # Initialize DB connection based on environment config
 init_db()
+
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -57,9 +82,9 @@ def decrypt_order_payload(token):
         return None
 
 def get_bank_payment_url(order_id, amount, user):
-    bank_base = app.config.get('BANK_PUBLIC_BASE', 'http://18.232.86.144:5000')
+    bank_base = app.config.get('BANK_PUBLIC_BASE', 'http://127.0.0.1:5001')
     token = encrypt_order_payload(order_id, amount, user)
-    return f"{bank_base}/pay?data={token}"
+    return f"{bank_base}/display_qr?data={token}"
 
 # --- Helper Functions ---
 def get_product(product_id):
@@ -126,12 +151,15 @@ def login():
             conn.close()
             
             if user and check_password_hash(user['password'], password):
+                session.permanent = True
                 session['user_id'] = user['user_id']
                 session['user'] = user['username']
                 session['name'] = user['name']
+                session['last_active'] = datetime.now(timezone.utc).timestamp()
                 flash(f'Welcome back, {user["name"]}!', 'success')
                 next_page = request.args.get('next') or url_for('products')
                 return redirect(next_page)
+
             else:
                 flash('Invalid username or password.', 'error')
         except Exception as e:
@@ -170,6 +198,7 @@ def api_add_to_cart(product_id):
     cart = session.get('cart', [])
     cart.append(product['id'])
     session['cart'] = cart
+    session.modified = True
     return jsonify({'success': True, 'message': f'Added {product["name"]} to your cart!'})
 
 @app.route('/api/cart/remove/<int:index>', methods=['POST'])
@@ -178,8 +207,10 @@ def api_remove_from_cart(index):
     if 0 <= index < len(cart):
         cart.pop(index)
         session['cart'] = cart
+        session.modified = True
         return jsonify({'success': True})
     return jsonify({'error': 'Invalid index.'}), 400
+
 
 @app.route('/api/cart/checkout', methods=['POST'])
 def api_checkout():
