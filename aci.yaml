@@ -1,0 +1,90 @@
+apiVersion: 2021-10-01
+location: eastus
+name: cg-cloudchasers-apps
+type: Microsoft.ContainerInstance/containerGroups
+
+properties:
+  osType: Linux
+
+  imageRegistryCredentials:
+    - server: cloudchasers.azurecr.io
+      username: cloudchasers
+      password: DKI2nhX9HFW10aSXI6n9wE5Wzv6E1aoHKWuJ66QlbekrAZR2FummJQQJ99CGACYeBjFEqg7NAAACAZCRPV0g
+
+  containers:
+
+    - name: banking-app
+      properties:
+        image: cloudchasers.azurecr.io/banking-app:latest
+        resources:
+          requests:
+            cpu: 1
+            memoryInGB: 1.5
+        ports:
+          - port: 5001
+        environmentVariables:
+          - name: DB_HOST
+            value: localhost
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: banking_db
+
+    - name: ecommerce-app
+      properties:
+        image: cloudchasers.azurecr.io/ecommerce-app:latest
+        resources:
+          requests:
+            cpu: 1
+            memoryInGB: 1.5
+        ports:
+          - port: 5000
+        environmentVariables:
+          - name: DB_HOST
+            value: localhost
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: ecommerce_db
+
+    - name: mysql
+      properties:
+        image: mysql:8.0
+        resources:
+          requests:
+            cpu: 1
+            memoryInGB: 1.5
+
+        ports:
+          - port: 3306
+
+        environmentVariables:
+          - name: MYSQL_ROOT_PASSWORD
+            secureValue: RootPassword123!
+          - name: MYSQL_DATABASE
+            value: banking_db
+          - name: MYSQL_USER
+            value: appuser
+          - name: MYSQL_PASSWORD
+            secureValue: AppPassword123!
+
+        volumeMounts:
+          - name: appdata
+            mountPath: /var/lib/mysql
+
+  ipAddress:
+    type: Public
+    ports:
+      - protocol: TCP
+        port: 5000
+      - protocol: TCP
+        port: 5001
+
+  volumes:
+    - name: appdata
+      azureFile:
+        shareName: appdata
+        storageAccountName: cloudchasers
+        storageAccountKey: Ao+SZLogoY2TsmKtMJ4yferO0sj6Z0uAaRMglhancbPulmIqhSdKOqdKqgahGILZdjcBARq9zTHC+AStFl5pHw==
+
+  restartPolicy: Always
