@@ -15,5 +15,5 @@ services:
     expose:
       - "5000"
     environment:
-      BANK_PUBLIC_BASE: http://44.222.238.61
+      BANK_PUBLIC_BASE: http://13.218.183.154/
       MERCHANT_ACCOUNT: cloudchasers
