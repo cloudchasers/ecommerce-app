@@ -5,23 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudChasers</title>
     <!-- Google Fonts for Modern Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <a href="{{ url_for('home') }}" class="logo" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">CloudChaser<span>.</span></a>
-        <nav>
-            <a href="{{ url_for('home') }}" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">Home</a>
-            <a href="{{ url_for('products') }}" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')">Our Treats</a>
-            {% if session.get('user') %}
-                <a href="#" onclick="openDrawer(); return false;" id="nav-cart-btn">Cart ({{ global_cart_items|length }})</a>
-                <a href="{{ url_for('history') }}" onclick="showLoadingScreen('Loading History...', 'Retrieving your past transactions')">History</a>
-                <span class="nav-user">Hi, {{ session.name }}</span>
-                <a href="{{ url_for('logout') }}" class="nav-logout" onclick="showLoadingScreen('Logging Out...', 'Clearing your session securely')">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="nav-login" onclick="showLoadingScreen('Loading Portal...', 'Opening secure login page')">Login</a>
-            {% endif %}
+    <header class="app-header">
+        <a href="{{ url_for('home') }}" class="brand-logo" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">
+            <span class="brand-text">CloudChasers</span>
+        </a>
+        <nav class="main-nav">
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">Home</a>
+                <a href="{{ url_for('products') }}" onclick="showLoadingScreen('Loading Treats...', 'Fetching our handcrafted pastry menu')">Our Treats</a>
+            </div>
+            <div class="nav-actions">
+                {% if session.get('user') %}
+                    <a href="#" onclick="openDrawer(); return false;" id="nav-cart-btn" class="nav-cart">
+                        🛒 Cart <span class="cart-badge">{{ global_cart_items|length }}</span>
+                    </a>
+                    <a href="{{ url_for('history') }}" class="nav-history" onclick="showLoadingScreen('Loading History...', 'Retrieving your past transactions')">🧾 History</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">👋 {{ session.name }}</span>
+                    <a href="{{ url_for('logout') }}" class="nav-logout" onclick="showLoadingScreen('Logging Out...', 'Clearing your session securely')">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-login" onclick="showLoadingScreen('Loading Portal...', 'Opening secure login page')">Login</a>
+                {% endif %}
+            </div>
         </nav>
     </header>
 
