@@ -8,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 git(
@@ -25,12 +24,10 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no \
                     -i /var/lib/jenkins/.ssh/jenkins_deploy_key \
                     ubuntu@3.90.15.65 \
-                    "
-                    cd /home/ubuntu/ecommerce-app &&
-                    git pull &&
-                    docker compose down &&
-                    docker compose up -d --build
-                    "
+                    "cd /home/ubuntu/ecommerce-app && \
+                    git pull && \
+                    docker compose down && \
+                    docker compose up -d --build"
                 '''
             }
         }
@@ -89,18 +86,32 @@ pipeline {
 
         stage('Redeploy ACI') {
             steps {
-                sh '''
-                    az container delete \
-                      --resource-group rg-azuser7688_mml.local-ruAwg \
-                      --name cg-cloudchasers-apps \
-                      --yes
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'acr-creds',
+                        usernameVariable: 'ACR_USER',
+                        passwordVariable: 'ACR_PASS'
+                    )
+                ]) {
+                    sh '''
+                        az container delete \
+                          --resource-group rg-azuser7688_mml.local-ruAwg \
+                          --name cg-cloudchasers-apps \
+                          --yes
 
-                    sleep 5
+                        sleep 5
 
-                    az container create \
-                      --resource-group rg-azuser7688_mml.local-ruAwg \
-                      --file aci.yaml
-                '''
+                        az container create \
+                          --resource-group rg-azuser7688_mml.local-ruAwg \
+                          --name cg-cloudchasers-apps \
+                          --image ${REGISTRY}/${IMAGE_NAME}:${TAG} \
+                          --registry-login-server ${REGISTRY} \
+                          --registry-username "$ACR_USER" \
+                          --registry-password "$ACR_PASS" \
+                          --dns-name-label cg-cloudchasers-app \
+                          --ports 5000
+                    '''
+                }
             }
         }
     }
