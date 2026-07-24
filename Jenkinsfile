@@ -87,6 +87,22 @@ pipeline {
                 '''
             }
         }
+
+        stage('Redeploy ACI') {
+            steps {
+                sh '''
+                    az login --identity || true
+                    az container delete \
+                      --resource-group rg-azuser7688_mml.local-ruAwg \
+                      --name cg-cloudchasers-apps \
+                      --yes
+                    sleep 30
+                    az container create \
+                      --resource-group rg-azuser7688_mml.local-ruAwg \
+                      --file aci.yaml
+                '''
+            }
+        }
     }
 
     post {
