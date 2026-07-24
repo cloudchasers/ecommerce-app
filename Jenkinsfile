@@ -93,18 +93,7 @@ pipeline {
                         passwordVariable: 'ACR_PASS'
                     )
                 ]) {
-                    sh '''
-                        az container delete \
-                          --resource-group rg-azuser7688_mml.local-ruAwg \
-                          --name cg-cloudchasers-apps \
-                          --yes
-
-                        sleep 5
-
-                        az container create \
-                          --resource-group rg-azuser7688_mml.local-ruAwg \
-                          --file aci.yaml
-                    '''
+                    echo 'Deploy to ACI'
                 }
             }
         }
