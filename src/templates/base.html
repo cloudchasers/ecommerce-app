@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudChasers</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='cinnamoroll.png') }}">
     <!-- Google Fonts for Modern Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header class="app-header">
         <a href="{{ url_for('home') }}" class="brand-logo" onclick="showLoadingScreen('Loading Home...', 'Returning to home page')">
+            <img src="{{ url_for('static', filename='Cinnamoroll-Png-Photo.webp') }}" alt="Cinnamoroll Logo" class="brand-img">
             <span class="brand-text">CloudChasers</span>
         </a>
         <nav class="main-nav">
