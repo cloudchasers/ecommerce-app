@@ -89,7 +89,7 @@ pipeline {
         }
 
         stage('Redeploy ACI') {
-            steps {
+           steps {
                 sh '''
                     az login --identity || true
                     az container delete \
